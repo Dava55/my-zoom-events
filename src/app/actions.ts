@@ -38,7 +38,7 @@ export async function setUserProfile(profile: UserProfile) {
 }
 
 // Реєстрація учасника на подію
-export async function registerAttendee(eventId: string) {
+export async function registerAttendee(eventId: string): Promise<void> {
   const cookieStore = await cookies();
   
   const firstName = cookieStore.get('user_first_name')?.value;
@@ -47,7 +47,7 @@ export async function registerAttendee(eventId: string) {
   const email = cookieStore.get('user_email')?.value;
 
   if (!firstName || !lastName || !omNumber || !email) {
-    return { success: false, error: 'Спочатку пройдіть реєстрацію' };
+    return;
   }
 
   let userToken = cookieStore.get(`event_token_${eventId}`)?.value;
@@ -83,11 +83,10 @@ export async function registerAttendee(eventId: string) {
   }
 
   revalidatePath('/');
-  return { success: true };
 }
 
 // Скасування запису
-export async function cancelRegistration(eventId: string) {
+export async function cancelRegistration(eventId: string): Promise<void> {
   const cookieStore = await cookies();
   const userToken = cookieStore.get(`event_token_${eventId}`)?.value;
 
@@ -103,5 +102,34 @@ export async function cancelRegistration(eventId: string) {
   }
 
   revalidatePath('/');
-  return { success: true };
+}
+
+// Створення події в адмінці
+export async function createEvent(formData: FormData): Promise<void> {
+  const title = formData.get('title') as string;
+  const lecturer = formData.get('lecturer') as string;
+  const eventDateStr = formData.get('eventDate') as string;
+  const zoomLink = formData.get('zoomLink') as string;
+
+  if (!title || !lecturer || !eventDateStr || !zoomLink) {
+    return;
+  }
+
+  await db.insert(events).values({
+    title,
+    lecturer,
+    eventDate: new Date(eventDateStr),
+    zoomLink,
+  });
+
+  revalidatePath('/admin');
+  revalidatePath('/');
+}
+
+// Видалення події в адмінці
+export async function deleteEvent(id: string): Promise<void> {
+  await db.delete(events).where(eq(events.id, id));
+
+  revalidatePath('/admin');
+  revalidatePath('/');
 }
