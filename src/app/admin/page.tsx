@@ -4,7 +4,6 @@ import { createEvent, deleteEvent } from '@/app/admin/actions';
 import { asc } from 'drizzle-orm';
 
 export default async function AdminPage() {
-  // Отримуємо всі події, відсортовані від найближчої
   const allEvents = await db
     .select()
     .from(events)
@@ -15,21 +14,20 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* 🔴 ФОРМА СТВОРЕННЯ ПОДІЇ */}
+        {/* ФОРМА СТВОРЕННЯ ПОДІЇ */}
         <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-sm space-y-4">
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             ✨ Створити нову подію
           </h2>
 
           <form
-            action={async (formData) => {
+            action={async (formData: FormData) => {
               'use server';
               await createEvent(formData);
             }}
             className="space-y-4"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Назва події */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-indigo-900">
                   Тема
@@ -43,7 +41,6 @@ export default async function AdminPage() {
                 />
               </div>
 
-              {/* Лектор */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-indigo-900">
                   Лектор
@@ -59,7 +56,6 @@ export default async function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Дата та час проведення */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-indigo-900">
                   Дата та час проведення
@@ -72,7 +68,6 @@ export default async function AdminPage() {
                 />
               </div>
 
-              {/* Посилання на Zoom */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-indigo-900">
                   Посилання на Zoom
@@ -87,7 +82,6 @@ export default async function AdminPage() {
               </div>
             </div>
 
-            {/* Кнопка створення */}
             <button
               type="submit"
               className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-indigo-600/20 text-sm mt-2"
@@ -97,7 +91,7 @@ export default async function AdminPage() {
           </form>
         </div>
 
-        {/* 🔴 СПИСОК СТВОРЕНИХ ПОДІЙ */}
+        {/* СПИСОК СТВОРЕНИХ ПОДІЙ */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-slate-900">
             Створені події 🗓️
@@ -121,7 +115,6 @@ export default async function AdminPage() {
                         : 'bg-white border-indigo-100 hover:border-indigo-300'
                     }`}
                   >
-                    {/* Верхня панель */}
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <h3 className="text-xl font-bold text-slate-900">
                         {event.title}
@@ -142,7 +135,6 @@ export default async function AdminPage() {
                           👩‍🏫 Лектор: <strong className="font-semibold text-slate-900">{event.lecturer}</strong>
                         </span>
 
-                        {/* Кнопка видалення */}
                         <form
                           action={async () => {
                             'use server';
@@ -160,7 +152,6 @@ export default async function AdminPage() {
                       </div>
                     </div>
 
-                    {/* Кнопка Excel */}
                     <div className="pt-3 border-t border-slate-100">
                       <a
                         href={`/api/admin/events/${event.id}/export`}

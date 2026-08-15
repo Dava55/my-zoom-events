@@ -1,149 +1,113 @@
 import { db } from '@/db';
-import { attendees, events } from '@/db/schema';
-import { desc } from 'drizzle-orm';
+import { events, attendees } from '@/db/schema';
+import { asc, eq, and } from 'drizzle-orm';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { registerAttendee, cancelRegistration } from '@/app/actions';
-import { asc } from 'drizzle-orm';
-import Link from 'next/link';
 
 export default async function HomePage() {
-  const cookieStore = await cookies();
-  const firstName = cookieStore.get('user_first_name')?.value;
-  const lastName = cookieStore.get('user_last_name')?.value;
-
-  // Якщо профіль не заповнений — направляємо на реєстрацію
-  if (!firstName || !lastName) {
-    redirect('/register');
-  }
-
   const allEvents = await db
     .select()
     .from(events)
     .orderBy(asc(events.eventDate));
 
-  const now = new Date();
+  const cookieStore = await cookies();
 
-  const upcomingEvents = allEvents.filter(
-    (event) => new Date(event.eventDate) >= now
-  );
-
-  const allAttendees = await db.select().from(attendees);
+  // Отримуємо списки токенів користувача для всіх подій
+  const registeredEventIds = new Set<string>();
+  for (const event of allEvents) {
+    const userToken = cookieStore.get(`event_token_${event.id}`)?.value;
+    if (userToken) {
+      const existing = await db
+        .select()
+        .from(attendees)
+        .where(
+          and(
+            eq(attendees.eventId, event.id),
+            eq(attendees.userToken, userToken)
+          )
+        );
+      if (existing.length > 0) {
+        registeredEventIds.add(event.id);
+      }
+    }
+  }
 
   return (
-    <main className="min-h-screen bg-white text-blue-950 p-6 sm:p-12">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-6">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <h1 className="text-2xl font-bold text-center text-slate-900">
+          Актуальні події 🗓️
+        </h1>
 
-        {/* Привітання користувача */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-indigo-100 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
-          <div>
-            <h1 className="text-2xl font-bold">Вітаємо, {firstName} {lastName}! 👋</h1>
-            <p className=" text-sm mt-1">
-              Обирайте зустрічі та реєструйтеся на Zoom-конференції
-            </p>
-          </div>
-          <img src="https://sgtas.ua/storage/static_images/f72xl5wbFHlLEuzSKTonsbdizPdXlQkmNk39iHOD.svg" alt="Logo" className="w-50" />
-          <Link
-            href="/register"
-            className="text-xs  hover:text-indigo-300 underline font-medium"
-          >
-            Змінити свої дані
-          </Link>
-        </div>
+        {allEvents.length === 0 ? (
+          <p className="text-center text-slate-500 text-sm">Подій немає</p>
+        ) : (
+          <div className="space-y-4">
+            {allEvents.map((event) => {
+              const isRegistered = registeredEventIds.has(event.id);
 
-        {/* Список усіх подій */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold ">Доступні зустрічі 📅</h2>
+              return (
+                <div
+                  key={event.id}
+                  className="bg-white border border-indigo-100 rounded-2xl p-5 shadow-sm space-y-3"
+                >
+                  <h2 className="text-xl font-bold text-slate-900">
+                    {event.title}
+                  </h2>
+                  <p className="text-sm text-slate-600">
+                    👩‍🏫 Лектор: {event.lecturer}
+                  </p>
+                  <p className="text-xs text-indigo-900 bg-indigo-50 inline-block px-3 py-1 rounded-full">
+                    📅 {new Date(event.eventDate).toLocaleString('uk-UA')}
+                  </p>
 
-          {upcomingEvents.length === 0 ? (
-            <div className="bg-indigo-100 border border-slate-700 rounded-2xl p-8 text-center text-blue-950 text-sm">
-              Наразі немає запланованих зустрічей. Завітайте пізніше!
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {upcomingEvents.map((event) => {
-                const userToken = cookieStore.get(`event_token_${event.id}`)?.value;
-                const isRegistered = allAttendees.some(
-                  (a) => a.eventId === event.id && a.userToken === userToken
-                );
-
-                return (
-                  <div
-                    key={event.id}
-                    className="bg-indigo-100 border border-slate-700 rounded-2xl p-1 space-y-2 shadow-xl hover:border-slate-600 transition"
-                  >
-                    {/* Деталі події */}
-                    <div className="flex items-center justify-between pt-2 ">
-                      <h3 className="text-2xl font-bold text-blue-950">
-                        {event.title}
-                      </h3>
-                      <span className="inline-block text-l font-semibold text-blue-950 bg-indigo-300 px-3 py-1 rounded-full">
-                        📅 {new Date(event.eventDate).toLocaleString('uk-UA', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                      <p className="text-blue-950 text-sm">
-                        👨‍🏫 Лектор: <span className="font-semibold text-blue-950">{event.lecturer}</span>
-                      </p>
-                    </div>
-
-                    {/* Блок запису / Входу в Zoom */}
-                    <div className="pt-0.5 border-t border-slate-700/80">
-                      {isRegistered ? (
-                        <div className="rounded-xl p-4 pt-2 text-center space-y-3">
-                          <div className="w-full flex gap-4 items-center">
-                            <p className="text-emerald-500 text-base font-semibold flex-1">
-                              🎉 Ви зареєстровані!
-                            </p>
-                            <p className="text-l flex-2 text-left">
-                              Приєднатися до зустрічі можна через кнопку нижче,<br />
-                              таке ж посилання надійде на пошту за 30 хвилин до початку зустрічі.
-                            </p>
-                          </div>
-                          <div className="w-full flex gap-4 items-center mb-0.5">
-                            <a
-                              href={event.zoomLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1 bg-blue-600 text-white text-center font-semibold py-2 rounded-xl transition shadow-lg shadow-blue-600/30 text-l"
-                            >
-                              📹 Приєднатися до Zoom
-                            </a>
-
-                            <form action={cancelRegistration.bind(null, event.id)}>
-                              <button
-                                type="submit"
-                                className="mx-2 w-full bg-red-400 text-white text-center font-semibold py-2 rounded-xl transition shadow-lg shadow-red-300 text-xs"
-                              >
-                                Скасувати запис
-                              </button>
-                            </form>
-                          </div>
-                        </div>
-                      ) : (
-                        <form action={registerAttendee.bind(null, event.id)}>
+                  <div className="pt-2">
+                    {isRegistered ? (
+                      <div className="flex gap-2">
+                        <a
+                          href={event.zoomLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 text-center bg-green-600 hover:bg-green-500 text-white font-semibold py-2 rounded-xl text-sm transition"
+                        >
+                          🎥 Zoom
+                        </a>
+                        <form
+                          action={async () => {
+                            'use server';
+                            await cancelRegistration(event.id);
+                          }}
+                        >
                           <button
                             type="submit"
-                            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2"
+                            className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-4 py-2 rounded-xl text-sm transition"
                           >
-                            <span>Записатися на зустріч</span>
-                            <span>🚀</span>
+                            Скасувати
                           </button>
                         </form>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <form
+                        action={async () => {
+                          'use server';
+                          await registerAttendee(event.id);
+                        }}
+                      >
+                        <button
+                          type="submit"
+                          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-sm transition"
+                        >
+                          Записатися
+                        </button>
+                      </form>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
