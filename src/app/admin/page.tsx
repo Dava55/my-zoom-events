@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { events, attendees } from '@/db/schema';
-import { createEvent, deleteEvent } from '@/app/admin/actions';
+import { createEvent, deleteEvent, updateEvent } from '@/app/admin/actions';
 import { desc, eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -180,22 +180,99 @@ export default async function AdminPage() {
                           {attendeeCounts.get(event.id) ?? 0} зареєстровано
                         </div>
 
-                        <form
-                          action={async () => {
-                            'use server';
-                            await deleteEvent(event.id);
-                          }}
-                        >
-                          <button
-                            type="submit"
-                            className={`flex items-center justify-center rounded-lg p-1.5 text-sm transition ${
-                              isPast ? 'text-slate-600 hover:bg-slate-200' : 'text-slate-500 hover:bg-red-50 hover:text-red-600'
-                            }`}
-                            title="Видалити подію"
+                        <div className="flex items-center gap-2">
+                          <details className="group relative">
+                            <summary className="flex cursor-pointer list-none items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-sm font-semibold text-[#0d2348] transition hover:bg-blue-100">
+                              ✏️ Редагувати
+                            </summary>
+
+                            <div className="absolute right-0 z-20 mt-2 w-[320px] rounded-2xl border border-blue-200 bg-white p-4 shadow-[0_20px_45px_rgba(42,116,255,0.12)]">
+                              <form
+                                action={async (formData: FormData) => {
+                                  'use server';
+                                  await updateEvent(event.id, formData);
+                                }}
+                                className="space-y-3"
+                              >
+                                <div>
+                                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+                                    Тема
+                                  </label>
+                                  <input
+                                    type="text"
+                                    name="title"
+                                    defaultValue={event.title}
+                                    required
+                                    className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+                                    Лектор
+                                  </label>
+                                  <input
+                                    type="text"
+                                    name="lecturer"
+                                    defaultValue={event.lecturer}
+                                    required
+                                    className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+                                    Дата та час
+                                  </label>
+                                  <input
+                                    type="datetime-local"
+                                    name="eventDate"
+                                    defaultValue={new Date(event.eventDate).toISOString().slice(0, 16)}
+                                    required
+                                    className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+                                    Zoom
+                                  </label>
+                                  <input
+                                    type="url"
+                                    name="zoomLink"
+                                    defaultValue={event.zoomLink}
+                                    required
+                                    className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
+                                  />
+                                </div>
+
+                                <button
+                                  type="submit"
+                                  className="w-full rounded-xl bg-[#2a74ff] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#1f63e6]"
+                                >
+                                  Зберегти зміни
+                                </button>
+                              </form>
+                            </div>
+                          </details>
+
+                          <form
+                            action={async () => {
+                              'use server';
+                              await deleteEvent(event.id);
+                            }}
                           >
-                            🗑️
-                          </button>
-                        </form>
+                            <button
+                              type="submit"
+                              className={`flex items-center justify-center rounded-lg p-1.5 text-sm transition ${
+                                isPast ? 'text-slate-600 hover:bg-slate-200' : 'text-slate-500 hover:bg-red-50 hover:text-red-600'
+                              }`}
+                              title="Видалити подію"
+                            >
+                              🗑️
+                            </button>
+                          </form>
+                        </div>
                       </div>
                     </div>
 
