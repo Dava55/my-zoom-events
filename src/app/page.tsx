@@ -172,7 +172,7 @@ export default async function HomePage() {
                         >
                           <button
                             type="submit"
-                            className="w-full rounded-xl bg-[#2a74ff] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-[#1f63e6]"
+                            className="w-full rounded-xl bg-blue-100 px-4 py-3  font-bold text-green-600 shadow-lg shadow-blue-600/20 hover:bg-blue-300"
                           >
                             Записатися
                           </button>

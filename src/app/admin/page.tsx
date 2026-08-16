@@ -3,6 +3,8 @@ import { events, attendees } from '@/db/schema';
 import { createEvent, deleteEvent } from '@/app/admin/actions';
 import { desc, eq } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 const logoUrl = 'https://sgtas.ua/storage/static_images/f72xl5wbFHlLEuzSKTonsbdizPdXlQkmNk39iHOD.svg';
 
 export default async function AdminPage() {

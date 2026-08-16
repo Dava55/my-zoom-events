@@ -37,7 +37,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="space-y-6 p-6 sm:p-8">
+        <div className="space-y-0 p-6 sm:p-4">
           <div className="space-y-2 text-center">
             <h2 className="text-2xl font-black text-[#0d2348]">Реєстрація 👋</h2>
             <p className="text-sm text-blue-700/80">
@@ -74,7 +74,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="mb-1 block text-xs font-medium tracking-[0.18em] text-blue-900">
-                Номер ОМ (тільки цифри) <span className="text-red-500">*</span>
+                Номер ОМ (тільки 2 цифри) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -83,8 +83,7 @@ export default function RegisterPage() {
                 maxLength={2}
                 pattern="[0-9]{2}"
                 inputMode="numeric"
-                placeholder="12"
-                title="Будь ласка, вкажіть 2 цифри"
+                placeholder="Наприклад: 05 | 11 | тощо"
                 className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-[#0d2348] placeholder:text-blue-500/60 focus:border-blue-400 focus:outline-none"
               />
             </div>
@@ -104,7 +103,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-[#2a74ff] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-[#1f63e6]"
+              className="w-full rounded-xl bg-blue-100 px-4 py-3 text-sm font-bold text-green-600 shadow-lg shadow-blue-600/20 hover:bg-blue-300"
             >
               Зберегти та продовжити 🚀
             </button>
