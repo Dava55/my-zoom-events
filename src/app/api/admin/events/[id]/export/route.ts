@@ -25,16 +25,25 @@ export async function GET(
       .where(eq(attendees.eventId, eventId));
 
     // Формуємо таблицю Excel
-    const excelData = eventAttendees.map((person, index) => ({
-      '№': index + 1,
-      'Ім’я': person.firstName || '—',
-      'Прізвище': person.lastName || '—',
-      'ОМ (№ обласної мережі)': person.omNumber || '—',
-      'Email': person.email || '—',
-      'Дата запису': person.createdAt 
-        ? new Date(person.createdAt).toLocaleString('uk-UA') 
-        : '—',
-    }));
+    const excelData = eventAttendees.map(
+      (
+        person: {
+          firstName?: string | null;
+          lastName?: string | null;
+          omNumber?: string | null;
+          email?: string | null;
+          createdAt?: Date | string | null;
+        },
+        index: number
+      ) => ({
+        '№': index + 1,
+        'Ім’я': person.firstName || '—',
+        'Прізвище': person.lastName || '—',
+        'ОМ (№ обласної мережі)': person.omNumber || '—',
+        'Email': person.email || '—',
+        'Дата запису': person.createdAt ? new Date(person.createdAt).toLocaleString('uk-UA') : '—',
+      })
+    );
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
