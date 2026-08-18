@@ -1,6 +1,6 @@
 import { db } from '@/db';
-import { events, attendees } from '@/db/schema';
-import { createEvent, deleteEvent, updateEvent } from '@/app/admin/actions';
+import { events, attendees, topicRequests } from '@/db/schema';
+import { createEvent, deleteEvent, deleteTopicRequest, updateEvent } from '@/app/admin/actions';
 import { desc, eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +23,7 @@ export default async function AdminPage() {
     attendeeCounts.set(event.id, eventAttendees.length);
   }
 
+  const topicSuggestions = await db.select().from(topicRequests).orderBy(desc(topicRequests.createdAt));
   const now = new Date();
   const orderedEvents = [...allEvents].sort(
     (a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
@@ -39,7 +40,7 @@ export default async function AdminPage() {
               </div>
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-blue-600">
-                   ADMIN
+                  ADMIN
                 </p>
                 <h1 className="text-xl font-black text-[#0d2348]">Адміністративна панель</h1>
               </div>
@@ -92,7 +93,19 @@ export default async function AdminPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
+                Короткий опис лекції
+              </label>
+              <textarea
+                name="description"
+                rows={3}
+                placeholder="Опис продукту, основні переваги, принципи розрахунку виплат..."
+                className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-[#0d2348] placeholder:text-blue-500/60 focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="space-y-1">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
                   Дата та час проведення
@@ -107,16 +120,46 @@ export default async function AdminPage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
-                  Посилання на Zoom
+                  Місць (макс. 90)
                 </label>
                 <input
-                  type="url"
-                  name="zoomLink"
+                  type="number"
+                  name="capacity"
+                  min={1}
+                  max={90}
+                  defaultValue={90}
                   required
-                  placeholder="https://zoom.us/j/..."
-                  className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-[#0d2348] placeholder:text-blue-500/60 focus:border-blue-400 focus:outline-none"
+                  className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
                 />
               </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
+                  Відображати вільні місця
+                </label>
+                <div className="flex h-11.5 items-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm text-[#0d2348]">
+                  <input
+                    type="checkbox"
+                    name="showAvailability"
+                    defaultChecked
+                    className="h-4 w-4 accent-blue-600"
+                  />
+                  <span className="ml-2">Так</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
+                Посилання на Zoom
+              </label>
+              <input
+                type="url"
+                name="zoomLink"
+                required
+                placeholder="https://zoom.us/j/..."
+                className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-[#0d2348] placeholder:text-blue-500/60 focus:border-blue-400 focus:outline-none"
+              />
             </div>
 
             <button
@@ -139,23 +182,23 @@ export default async function AdminPage() {
             <div className="space-y-3">
               {orderedEvents.map((event) => {
                 const isPast = new Date(event.eventDate) < now;
+                const usedSeats = attendeeCounts.get(event.id) ?? 0;
+                const availableSeats = Math.max(Number(event.capacity || 90) - usedSeats, 0);
 
                 return (
                   <div
                     key={event.id}
-                    className={`rounded-[26px] border p-5 shadow-[0_16px_40px_rgba(42,116,255,0.08)] transition ${
-                      isPast
-                        ? 'border-slate-200 bg-slate-50/90 text-slate-700 opacity-80'
-                        : 'border-blue-100 bg-white/95 text-[#0d2348]'
-                    }`}
+                    className={`rounded-[26px] border p-5 shadow-[0_16px_40px_rgba(42,116,255,0.08)] transition ${isPast
+                      ? 'border-slate-200 bg-slate-50/90 text-slate-700 opacity-80'
+                      : 'border-blue-100 bg-white/95 text-[#0d2348]'
+                      }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <h3 className="text-xl font-bold text-[#0d2348]">{event.title}</h3>
 
                       <span
-                        className={`inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap ${
-                          isPast ? 'bg-slate-200 text-slate-700' : 'border border-blue-200 bg-blue-50 text-blue-700'
-                        }`}
+                        className={`inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap ${isPast ? 'bg-slate-200 text-slate-700' : 'border border-blue-200 bg-blue-50 text-blue-700'
+                          }`}
                       >
                         📅 {new Date(event.eventDate).toLocaleString('uk-UA', {
                           day: 'numeric',
@@ -173,11 +216,10 @@ export default async function AdminPage() {
                         </span>
 
                         <div
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            isPast ? 'bg-slate-200 text-slate-700' : 'bg-blue-100 text-blue-700'
-                          }`}
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-blue-100 text-blue-700'
+                            }`}
                         >
-                          {attendeeCounts.get(event.id) ?? 0} зареєстровано
+                          {usedSeats} / {event.capacity || 90} зареєстровано
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -186,7 +228,7 @@ export default async function AdminPage() {
                               ✏️ Редагувати
                             </summary>
 
-                            <div className="absolute right-0 z-20 mt-2 w-[320px] rounded-2xl border border-blue-200 bg-white p-4 shadow-[0_20px_45px_rgba(42,116,255,0.12)]">
+                            <div className="absolute right-0 z-20 mt-2 w-90 rounded-2xl border border-blue-200 bg-white p-4 shadow-[0_20px_45px_rgba(42,116,255,0.12)]">
                               <form
                                 action={async (formData: FormData) => {
                                   'use server';
@@ -222,6 +264,18 @@ export default async function AdminPage() {
 
                                 <div>
                                   <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+                                    Короткий опис
+                                  </label>
+                                  <textarea
+                                    name="description"
+                                    rows={3}
+                                    defaultValue={event.description || ''}
+                                    className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
                                     Дата та час
                                   </label>
                                   <input
@@ -231,6 +285,36 @@ export default async function AdminPage() {
                                     required
                                     className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
                                   />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+                                      Місць
+                                    </label>
+                                    <input
+                                      type="number"
+                                      name="capacity"
+                                      min={1}
+                                      max={90}
+                                      defaultValue={event.capacity || 90}
+                                      required
+                                      className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-[#0d2348] focus:border-blue-400 focus:outline-none"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700">
+                                      Показувати
+                                    </label>
+                                    <div className="flex h-10.5 items-center rounded-xl border border-blue-200 bg-blue-50 px-3 text-sm text-[#0d2348]">
+                                      <input
+                                        type="checkbox"
+                                        name="showAvailability"
+                                        defaultChecked={event.showAvailability ?? true}
+                                        className="h-4 w-4 accent-blue-600"
+                                      />
+                                    </div>
+                                  </div>
                                 </div>
 
                                 <div>
@@ -264,9 +348,8 @@ export default async function AdminPage() {
                           >
                             <button
                               type="submit"
-                              className={`flex items-center justify-center rounded-lg p-1.5 text-sm transition ${
-                                isPast ? 'text-slate-600 hover:bg-slate-200' : 'text-slate-500 hover:bg-red-50 hover:text-red-600'
-                              }`}
+                              className={`flex items-center justify-center rounded-lg p-1.5 text-sm transition ${isPast ? 'text-slate-600 hover:bg-slate-200' : 'text-slate-500 hover:bg-red-50 hover:text-red-600'
+                                }`}
                               title="Видалити подію"
                             >
                               🗑️
@@ -276,12 +359,16 @@ export default async function AdminPage() {
                       </div>
                     </div>
 
+                    {event.description && (
+                      <div className="mt-3 rounded-2xl border border-dashed border-blue-200 bg-blue-50/50 px-3 py-2 text-sm leading-relaxed text-[#0d2348]">
+                        <span className="font-semibold text-blue-700">Опис:</span> {event.description}
+                      </div>
+                    )}
                     <div className="mt-4 border-t border-blue-100 pt-3">
                       <a
                         href={`/api/admin/events/${event.id}/export`}
-                        className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition ${
-                          isPast ? 'bg-slate-500 hover:bg-slate-600' : 'bg-[#2a74ff] hover:bg-[#1f63e6]'
-                        }`}
+                        className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition ${isPast ? 'bg-slate-500 hover:bg-slate-600' : 'bg-[#2a74ff] hover:bg-[#1f63e6]'
+                          }`}
                       >
                         📊 Завантажити Excel список
                       </a>
@@ -289,6 +376,63 @@ export default async function AdminPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-[28px] border border-blue-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(42,116,255,0.08)]">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-bold text-[#0d2348]">Запити тем для лекцій</h2>
+            <a
+              href="/api/admin/topic-requests/export"
+              className="rounded-xl bg-[#2a74ff] px-3 py-2 text-sm font-bold text-white hover:bg-[#1f63e6]"
+            >
+              Excel
+            </a>
+          </div>
+
+          {topicSuggestions.length === 0 ? (
+            <div className="mt-4 rounded-2xl border border-dashed border-blue-200 bg-blue-50/40 p-4 text-sm text-blue-700">
+              Наразі немає нових пропозицій.
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {topicSuggestions.map(
+                (
+                  request: {
+                    id: string;
+                    firstName?: string | null;
+                    lastName?: string | null;
+                    omNumber?: string | null;
+                    email?: string | null;
+                    message?: string | null;
+                  }
+                ) => (
+                  <div key={request.id} className="rounded-2xl border border-blue-200 bg-blue-50/40 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-[#0d2348]">
+                      <span className="font-bold">{request.firstName} {request.lastName}</span>
+                      <span className="text-blue-700">{request.omNumber}</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between gap-2 text-xs text-blue-700">
+                      <span>{request.email}</span>
+                      <form
+                        action={async () => {
+                          'use server';
+                          await deleteTopicRequest(request.id);
+                        }}
+                      >
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-red-200 bg-red-50 px-2 py-1 font-semibold text-red-600 hover:bg-red-100"
+                        >
+                          Видалити
+                        </button>
+                      </form>
+                    </div>
+                    <div className="mt-3 rounded-xl bg-white px-3 py-2 text-sm text-[#0d2348]">{request.message}</div>
+                  </div>
+                )
+              )}
             </div>
           )}
         </section>
