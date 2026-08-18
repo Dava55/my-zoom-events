@@ -166,8 +166,10 @@ export default async function HomePage() {
                     </div>
 
                     {event.description && (
-                      <div className="mt-3 rounded-2xl border border-dashed border-blue-200 bg-blue-50/50 px-3 py-2 text-sm leading-relaxed text-[#0d2348]">
-                        <span className="font-semibold text-blue-700">Опис:</span> {event.description}
+                      <div className="mt-3 rounded-xl border border-dashed border-blue-200 bg-blue-50/50 px-3 py-2">
+                        <p className="line-clamp-2 text-sm leading-relaxed text-[#0d2348]/85">
+                          <span className="font-semibold text-blue-700">Опис:</span> {event.description}
+                        </p>
                       </div>
                     )}
 
