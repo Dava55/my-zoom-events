@@ -108,42 +108,7 @@ export default async function HomePage() {
           </div>
         </header>
 
-        <section className="rounded-[28px] border border-blue-100 bg-white/90 p-5 shadow-[0_18px_42px_rgba(42,116,255,0.08)]">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-black text-[#0d2348]">Яку тему ви хочете почути?</h2>
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-              {totalTopicRequests.length} повідомлень
-            </span>
-          </div>
 
-          {topicSuccess && (
-            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-              {topicSuccess}
-            </div>
-          )}
-
-          <form
-            action={async (formData: FormData) => {
-              'use server';
-              await submitTopicRequest(formData);
-            }}
-            className="mt-4 space-y-3"
-          >
-            <textarea
-              name="message"
-              rows={4}
-              required
-              placeholder="Наприклад: хочу послухати про стратегію розвитку команди, страхування, фінансові ризики, або інші теми..."
-              className="w-full rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-[#0d2348] placeholder:text-blue-500/60 focus:border-blue-400 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="rounded-xl bg-[#2a74ff] px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-[#1f63e6]"
-            >
-              Надіслати пропозицію
-            </button>
-          </form>
-        </section>
 
         <section className="space-y-4">
           {upcomingEvents.length === 0 ? (
@@ -189,7 +154,7 @@ export default async function HomePage() {
                         </span>
 
                         {availability.show && (
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-sm font-bold uppercase tracking-[0.12em] ${isFull ? 'border border-red-200 bg-red-50 text-red-600' : 'border border-blue-200 bg-blue-50 text-blue-700'}`}>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-sm font-bold tracking-[0.12em] ${isFull ? 'border border-red-200 bg-red-50 text-red-600' : 'border border-blue-200 bg-blue-50 text-blue-700'}`}>
                             Вільних місць: {availability.available}
                           </span>
                         )}
@@ -253,11 +218,10 @@ export default async function HomePage() {
                           <button
                             type="submit"
                             disabled={isFull}
-                            className={`w-full rounded-xl px-4 py-3 font-bold shadow-lg ${
-                              isFull
+                            className={`w-full rounded-xl px-4 py-3 font-bold shadow-lg ${isFull
                                 ? 'cursor-not-allowed bg-gray-200 text-gray-500 shadow-none'
                                 : 'bg-blue-100 text-green-600 shadow-blue-600/20 hover:bg-blue-300'
-                            }`}
+                              }`}
                           >
                             {isFull ? 'Вільних місць немає. Невдовзі зможете записатись на інший час' : 'Записатися'}
                           </button>
@@ -269,6 +233,43 @@ export default async function HomePage() {
               })}
             </div>
           )}
+
+          <section className="rounded-[28px] border border-blue-100 bg-white/90 p-5 shadow-[0_18px_42px_rgba(42,116,255,0.08)]">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-xl font-black text-[#0d2348]">Яку ще тему ви хотіли б почути?</h2>
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                {totalTopicRequests.length} повідомлень
+              </span>
+            </div>
+
+            {topicSuccess && (
+              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                {topicSuccess}
+              </div>
+            )}
+
+            <form
+              action={async (formData: FormData) => {
+                'use server';
+                await submitTopicRequest(formData);
+              }}
+              className="mt-4 space-y-3"
+            >
+              <textarea
+                name="message"
+                rows={4}
+                required
+                placeholder="Хочу послухати про Автоцивілку плюс"
+                className="w-full rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-[#0d2348] placeholder:text-blue-500/60 focus:border-blue-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="rounded-xl bg-[#2a74ff] px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-[#1f63e6]"
+              >
+                Надіслати пропозицію
+              </button>
+            </form>
+          </section>
         </section>
       </div>
     </main>
