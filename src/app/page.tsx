@@ -80,7 +80,7 @@ export default async function HomePage() {
               </div>
               <div>
                 <h1 className="text-2xl font-black tracking-tight text-[#0d2348] sm:text-3xl">
-                  Актуальні лекції
+                  Календар онлайн навчань
                 </h1>
               </div>
             </div>
@@ -113,9 +113,9 @@ export default async function HomePage() {
         <section className="space-y-4">
           {upcomingEvents.length === 0 ? (
             <div className="rounded-[28px] border border-dashed border-blue-200 bg-white/80 p-8 text-center shadow-[0_16px_40px_rgba(42,116,255,0.08)]">
-              <p className="text-xl font-bold text-[#0d2348]">Наразі немає активних лекцій</p>
+              <p className="text-xl font-bold text-[#0d2348]">Наразі немає активних навчальних подій</p>
               <p className="mt-2 text-sm text-blue-700/80">
-                Коли адміністратор додасть нову лекцію, вона з’явиться тут автоматично.
+                Коли адміністратор додасть нову навчальну подію, вона з’явиться тут автоматично.
               </p>
             </div>
           ) : (
@@ -177,7 +177,7 @@ export default async function HomePage() {
                       <div className="mt-2 flex items-center gap-4 rounded-2xl border border-blue-200 bg-blue-50/80 px-2 py-1 text-sm text-blue-800">
                         <div className="font-bold">📌 Ви зареєстровані.</div>
                         <div className=" text-blue-700/90">
-                          Щоб зайти на лекцію, натисніть кнопку нижче. Також це посилання надійде вам на пошту за 30 хвилин до початку лекції.
+                          Щоб зайти на навчання, натисніть кнопку нижче. Також це посилання надійде вам на пошту за 30 хвилин до початку навчання.
                         </div>
                       </div>
                     )}
@@ -191,7 +191,7 @@ export default async function HomePage() {
                             rel="noopener noreferrer"
                             className="flex-1 rounded-xl bg-[#2cc97a] px-4 py-3 text-center text-sm font-bold text-white shadow-lg shadow-emerald-500/20 hover:bg-[#2bbd74]"
                           >
-                            Натисни, щоб приєднатися до лекції
+                            Натисни, щоб приєднатися до навчання
                           </a>
                           <form
                             action={async () => {

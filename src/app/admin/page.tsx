@@ -95,7 +95,7 @@ export default async function AdminPage() {
 
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
-                Короткий опис лекції
+                Короткий опис навчання
               </label>
               <textarea
                 name="description"
@@ -382,7 +382,7 @@ export default async function AdminPage() {
 
         <section className="rounded-[28px] border border-blue-100 bg-white/90 p-6 shadow-[0_16px_40px_rgba(42,116,255,0.08)]">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-bold text-[#0d2348]">Запити тем для лекцій</h2>
+            <h2 className="text-xl font-bold text-[#0d2348]">Запити тем для навчань</h2>
             <a
               href="/api/admin/topic-requests/export"
               className="rounded-xl bg-[#2a74ff] px-3 py-2 text-sm font-bold text-white hover:bg-[#1f63e6]"

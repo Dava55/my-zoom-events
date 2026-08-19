@@ -31,7 +31,7 @@ export default function RegisterPage() {
           <div className="text-center">
             <h1 className="text-xl font-black text-[#0d2348]">Вас вітає тренінговий центр<br />
             <div className="text-sm text-blue-700/80">
-              тут ви зможете бачити актуальний перелік лекцій та зареєструватися для участі
+              тут ви зможете бачити актуальний перелік навчань та зареєструватися для участі
             </div>
             </h1>
           </div>
